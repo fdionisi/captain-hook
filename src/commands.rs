@@ -5,7 +5,7 @@ use std::{
     process::{Command, Output},
 };
 
-#[cfg(not(target_os = "windows"))]
+#[cfg(unix)]
 use std::os::unix::fs::PermissionsExt;
 
 use crate::error::Error;
@@ -26,7 +26,7 @@ pub fn add(file_name: &str, cmd: &str) -> Result<(), Error> {
     } else {
         let mut file = fs::File::create(&file_name)?;
         file.write(&HOOKS)?;
-        if cfg!(not(target_os = "windows")) {
+        if cfg!(unix) {
             let mut permissions = file.metadata()?.permissions();
             permissions.set_mode(0o0755);
             file.set_permissions(permissions)?;
@@ -50,7 +50,7 @@ pub fn install(dir: &str) -> Result<(), Error> {
 
     let mut script = fs::File::create(p.join("_/captain_hook.sh"))?;
     write!(script, "{}", String::from(CAPTAIN_HOOK))?;
-    if cfg!(not(target_os = "windows")) {
+    if cfg!(unix) {
         let mut permissions = script.metadata()?.permissions();
         permissions.set_mode(0o0755);
         script.set_permissions(permissions)?;
