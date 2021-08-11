@@ -146,7 +146,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: captain-hook-*/captain-hook-*
-          body_path: RELEASE.md
+          # body_path: RELEASE.md
 
   # Publish captain-hook to Crates.io
   cargo_publish:
