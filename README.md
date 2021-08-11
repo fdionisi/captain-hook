@@ -5,9 +5,10 @@
       Cross-platform, modern and native git hooks.
     </b>
   </p>
-  <small>
-    Inspired by&nbsp;<a href="https://github.com/typicode/husky" target="_blank">husky</a>.
-  </small>
+  <sub>
+    Inspired by
+    <a href="https://github.com/typicode/husky" target="_blank">husky</a>.
+  </sub>
 </div>
 
 ## License
