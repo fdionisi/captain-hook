@@ -8,58 +8,57 @@ use std::{
 #[cfg(not(target_os = "windows"))]
 use std::os::unix::fs::PermissionsExt;
 
+use crate::error::Error;
+
 static HOOKS: &'static [u8] = include_bytes!("../assets/hook_template.sh");
 static CAPTAIN_HOOK: &'static str = include_str!("../assets/captain_hook.sh");
 
-fn git<S: AsRef<std::ffi::OsStr>>(args: &[S]) -> Output {
-    let child = Command::new("git").args(args).spawn().expect("msg: &str");
-    let out = child.wait_with_output().expect("msg: &str");
-    out
+fn git<S: AsRef<std::ffi::OsStr>>(args: &[S]) -> Result<Output, Error> {
+    Ok(Command::new("git").args(args).output()?)
 }
 
-pub fn add(file_name: &str, cmd: &str) {
+pub fn add(file_name: &str, cmd: &str) -> Result<(), Error> {
     let mut file = if Path::new(&file_name).exists() {
         fs::OpenOptions::new()
             .write(true)
             .append(true)
-            .open(&file_name)
-            .unwrap()
+            .open(&file_name)?
     } else {
-        let mut file = fs::File::create(&file_name).unwrap();
-        file.write(&HOOKS).unwrap();
+        let mut file = fs::File::create(&file_name)?;
+        file.write(&HOOKS)?;
         if cfg!(not(target_os = "windows")) {
-            let mut permissions = file.metadata().unwrap().permissions();
+            let mut permissions = file.metadata()?.permissions();
             permissions.set_mode(0o0755);
-            file.set_permissions(permissions).unwrap();
+            file.set_permissions(permissions)?;
         }
 
         file
     };
 
-    writeln!(file, "{}", cmd).unwrap();
+    Ok(writeln!(file, "{}", cmd)?)
 }
 
-pub fn install(dir: &str) {
-    if git(&["rev-parse"]).status.code() != Some(0) {
-        return;
+pub fn install(dir: &str) -> Result<(), Error> {
+    if git(&["rev-parse"])?.status.code() != Some(0) {
+        return Ok(());
     }
 
     let p = Path::new(dir);
-    fs::create_dir_all(p.join("_")).unwrap();
-    let mut gitignore = fs::File::create(p.join("_/.gitignore")).unwrap();
-    gitignore.write(b"*").unwrap();
+    fs::create_dir_all(p.join("_"))?;
+    let mut gitignore = fs::File::create(p.join("_/.gitignore"))?;
+    gitignore.write(b"*")?;
 
-    let mut script = fs::File::create(p.join("_/captain_hook.sh")).unwrap();
-    write!(script, "{}", String::from(CAPTAIN_HOOK)).unwrap();
+    let mut script = fs::File::create(p.join("_/captain_hook.sh"))?;
+    write!(script, "{}", String::from(CAPTAIN_HOOK))?;
     if cfg!(not(target_os = "windows")) {
-        let mut permissions = script.metadata().unwrap().permissions();
+        let mut permissions = script.metadata()?.permissions();
         permissions.set_mode(0o0755);
-        script.set_permissions(permissions).unwrap();
+        script.set_permissions(permissions)?;
     }
 
-    git(&["config", "core.hooksPath", dir]);
+    git(&["config", "core.hooksPath", dir]).map(|_| ())
 }
 
-pub fn uninstall() {
-    git(&["config", "--unset", "core.hooksPath"]);
+pub fn uninstall() -> Result<(), Error> {
+    git(&["config", "--unset", "core.hooksPath"]).map(|_| ())
 }

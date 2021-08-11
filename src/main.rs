@@ -1,6 +1,9 @@
 mod commands;
+mod error;
 
 use std::env;
+
+use crate::error::Error;
 
 const USAGE: &'static str = r#"captain-hook 
 
@@ -12,17 +15,26 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
-    help         Prints this message or the help of the given subcommand(s)
     install      
     add          
     uninstall
 "#;
 
-fn main() {
+fn print_usage() -> Result<(), Error> {
+    println!("{}", USAGE);
+    Ok(())
+}
+
+fn print_version() -> Result<(), Error> {
+    println!("{}", env!("CARGO_PKG_VERSION"));
+    Ok(())
+}
+
+fn main() -> Result<(), Error> {
     let mut args: Vec<String> = env::args().collect();
     let _ = args.remove(0);
     if args.len() == 0 {
-        return println!("{}", USAGE);
+        return print_usage();
     }
 
     let sub_command = args.remove(0);
@@ -38,9 +50,11 @@ fn main() {
             let cmd = args.get(1);
             match (file_name, cmd) {
                 (Some(f), Some(cmd)) => commands::add(&f, &cmd),
-                _ => println!("{}", USAGE),
+                _ => print_usage(),
             }
         }
-        _ => println!("{}", USAGE),
+        "--version" | "-V" => print_version(),
+        "--help" | "-h" => print_usage(),
+        _ => print_usage(),
     }
 }
