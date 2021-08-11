@@ -5,13 +5,23 @@ use std::{
     process::{Command, Output},
 };
 
-#[cfg(unix)]
-use std::os::unix::fs::PermissionsExt;
-
 use crate::error::Error;
 
 static HOOKS: &'static [u8] = include_bytes!("../assets/hook_template.sh");
 static CAPTAIN_HOOK: &'static str = include_str!("../assets/captain_hook.sh");
+
+#[cfg(unix)]
+fn set_permissions(file: &fs::File) -> Result<(), Error> {
+    use std::os::unix::fs::PermissionsExt;
+    let mut permissions = file.metadata()?.permissions();
+    permissions.set_mode(0o0755);
+    Ok(file.set_permissions(permissions)?)
+}
+
+#[cfg(windows)]
+fn set_permissions(file: &fs::File) -> Result<(), Error> {
+    Ok(())
+}
 
 fn git<S: AsRef<std::ffi::OsStr>>(args: &[S]) -> Result<Output, Error> {
     Ok(Command::new("git").args(args).output()?)
@@ -26,11 +36,7 @@ pub fn add(file_name: &str, cmd: &str) -> Result<(), Error> {
     } else {
         let mut file = fs::File::create(&file_name)?;
         file.write(&HOOKS)?;
-        if cfg!(unix) {
-            let mut permissions = file.metadata()?.permissions();
-            permissions.set_mode(0o0755);
-            file.set_permissions(permissions)?;
-        }
+        set_permissions(&file)?;
 
         file
     };
@@ -50,11 +56,7 @@ pub fn install(dir: &str) -> Result<(), Error> {
 
     let mut script = fs::File::create(p.join("_/captain_hook.sh"))?;
     write!(script, "{}", String::from(CAPTAIN_HOOK))?;
-    if cfg!(unix) {
-        let mut permissions = script.metadata()?.permissions();
-        permissions.set_mode(0o0755);
-        script.set_permissions(permissions)?;
-    }
+    set_permissions(&script)?;
 
     git(&["config", "core.hooksPath", dir]).map(|_| ())
 }
