@@ -1,8 +1,5 @@
 {
-  "hosting": [
-    {
-      "target": "captain-hook",
-      "public": "www"
+    "hosting": {
+        "public": "www"
     }
-  ]
 }
