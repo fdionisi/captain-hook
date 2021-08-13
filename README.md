@@ -32,7 +32,7 @@ It is possible to install `captain-hook` in two flavours:
 
 - With Shell:
   ```sh
-  sh -c "$(curl -fsSL https://captain-hook.rs/install)"
+  sh -c "$(curl -fsSL https://captain-hook.sh/install)"
   ```
 
   To update the Captain Hook itself, rerun the above script. It will replace the
