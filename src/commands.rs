@@ -7,8 +7,11 @@ use std::{
 
 use crate::error::Error;
 
-static HOOKS: &'static [u8] = include_bytes!("../assets/hook_template.sh");
-static CAPTAIN_HOOK: &'static str = include_str!("../assets/captain_hook.sh");
+static HOOKS: &'static str = r#"#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+"#;
+
+static HUSKY: &'static str = include_str!("../husky/husky.sh");
 
 #[cfg(unix)]
 fn set_permissions(file: &fs::File) -> Result<(), Error> {
@@ -35,7 +38,7 @@ pub fn add(file_name: &str, cmd: &str) -> Result<(), Error> {
             .open(&file_name)?
     } else {
         let mut file = fs::File::create(&file_name)?;
-        file.write(&HOOKS)?;
+        file.write(&HOOKS.as_bytes())?;
         set_permissions(&file)?;
 
         file
@@ -54,8 +57,8 @@ pub fn install(dir: &str) -> Result<(), Error> {
     let mut gitignore = fs::File::create(p.join("_/.gitignore"))?;
     gitignore.write(b"*")?;
 
-    let mut script = fs::File::create(p.join("_/captain_hook.sh"))?;
-    write!(script, "{}", String::from(CAPTAIN_HOOK))?;
+    let mut script = fs::File::create(p.join("_/husky.sh"))?;
+    write!(script, "{}", String::from(HUSKY))?;
     set_permissions(&script)?;
 
     git(&["config", "core.hooksPath", dir]).map(|_| ())

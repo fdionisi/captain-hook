@@ -36,7 +36,7 @@ fn main() -> Result<(), Error> {
     let sub_command = args.get(1).unwrap();
     match sub_command.as_str() {
         "install" => {
-            let temp_dir = String::from(".hooks");
+            let temp_dir = String::from(".husky");
             let dir = args.get(2).unwrap_or(&temp_dir);
             commands::install(&dir)
         }

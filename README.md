@@ -6,7 +6,7 @@
     </b>
   </p>
   <sub>
-    Inspired by
+    Built on top of
     <a href="https://github.com/typicode/husky" target="_blank">husky</a>.
   </sub>
 </div>
