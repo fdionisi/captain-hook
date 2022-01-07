@@ -9,7 +9,7 @@ const USAGE: &'static str = r#"captain-hook
 
 USAGE:
     captain-hook install [dir] (default: .hooks)
-    captain-hook add <file> <cmd>
+    captain-hook add|set <file> <cmd>
     captain-hook uninstall
 
 FLAGS:
@@ -41,6 +41,10 @@ fn main() -> Result<(), Error> {
             commands::install(&dir)
         }
         "uninstall" => commands::uninstall(),
+        "set" => match (args.get(2), args.get(3)) {
+            (Some(file_name), Some(cmd)) => commands::set(&file_name, &cmd),
+            _ => print_usage(),
+        }
         "add" => match (args.get(2), args.get(3)) {
             (Some(file_name), Some(cmd)) => commands::add(&file_name, &cmd),
             _ => print_usage(),

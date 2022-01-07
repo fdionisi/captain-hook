@@ -31,20 +31,16 @@ fn git<S: AsRef<std::ffi::OsStr>>(args: &[S]) -> Result<Output, Error> {
 }
 
 pub fn add(file_name: &str, cmd: &str) -> Result<(), Error> {
-    let mut file = if Path::new(&file_name).exists() {
-        fs::OpenOptions::new()
+    if Path::new(&file_name).exists() {
+        let mut file = fs::OpenOptions::new()
             .write(true)
             .append(true)
-            .open(&file_name)?
+            .open(&file_name)?;
+        
+        Ok(writeln!(file, "{}", cmd)?)
     } else {
-        let mut file = fs::File::create(&file_name)?;
-        file.write(&HOOKS.as_bytes())?;
-        set_permissions(&file)?;
-
-        file
-    };
-
-    Ok(writeln!(file, "{}", cmd)?)
+        set(file_name, cmd)
+    }
 }
 
 pub fn install(dir: &str) -> Result<(), Error> {
@@ -62,6 +58,14 @@ pub fn install(dir: &str) -> Result<(), Error> {
     set_permissions(&script)?;
 
     git(&["config", "core.hooksPath", dir]).map(|_| ())
+}
+
+pub fn set(file_name: &str, cmd: &str) -> Result<(), Error> {
+    let mut file = fs::File::create(&file_name)?;
+    file.write(&HOOKS.as_bytes())?;
+    set_permissions(&file)?;
+
+    Ok(writeln!(file, "{}", cmd)?)
 }
 
 pub fn uninstall() -> Result<(), Error> {
