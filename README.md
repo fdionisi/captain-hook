@@ -26,9 +26,14 @@ application that is accessible to anyone.
 - Upgrading from `0.1.*` to `0.2.0` involves breaking changes.
   <details>
 
-  Version `0.2.0` is built on top of [husky](https://github.com/typicode/husky) and follows its files and directories naming convention.
+  Version `0.2.0` is built on top of [husky](https://github.com/typicode/husky)
+  and follows its files and directories naming convention.
 
-  During the `install` command, by default Captain Hook places all files in the `.husky` directory rather than the `.hooks`. The boot script for each hook is now called `_/husky.sh` instead of `_/captain-hook.sh`. Consequently, during the `add` command, the new hook will be prefixed with `. "$(dirname "$0")/_/husky.sh"`.
+  During the `install` command, by default Captain Hook places all files in the
+  `.husky` directory rather than the `.hooks`. The boot script for each hook is
+  now called `_/husky.sh` instead of `_/captain-hook.sh`. Consequently, during
+  the `add` command, the new hook will be prefixed with
+  `. "$(dirname "$0")/_/husky.sh"`.
   </details>
 
 ## Prerequisites
